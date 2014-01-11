@@ -27,7 +27,7 @@
     }
     PDFPage *firstPage = [self.document pageAtIndex:0];
     
-    NSRect bounds = [firstPage boundsForBox:kPDFDisplayBoxMediaBox];
+//    NSRect bounds = [firstPage boundsForBox:kPDFDisplayBoxMediaBox];
     
     NSMutableArray *lineMatches = [[NSMutableArray alloc] init];
     
@@ -60,7 +60,52 @@
         // Repeat with the monday text, so that we get outer bounds
         [self findStringAndAssignToClosest:@"Lundi" withLineMatches:lineMatches andAssignmentBlock:^(SGCLineMatch *closest, NSRect rect) {
             closest.lundiRect = rect;
-            NSLog(@"Semaine: %f, Vernets: %f, Lundi: %f", closest.semaineRect.origin.y, closest.vernetsRect.origin.y, closest.lundiRect.origin.y);
+        }];
+        
+        NSError *weekSpanError = NULL;
+        NSRegularExpression *weekSpanRegularExpression =
+            [NSRegularExpression
+                regularExpressionWithPattern:@"semaine.*au\\s+(\\d+\\s*\\S+\\s*\\d\\d\\d\\d)"
+                options:(NSRegularExpressionDotMatchesLineSeparators | NSRegularExpressionCaseInsensitive)
+                error:&weekSpanError];
+        
+        NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"fr_CH"]; // Yes, we're in Geneva
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"dd MMMM yyyy"];
+        [formatter setLocale:locale];
+        
+        NSDateFormatter *unifiedFormatter = [[NSDateFormatter alloc] init];
+        [unifiedFormatter setDateFormat:@"yyyy-MM-dd"];
+        [unifiedFormatter setLocale:locale];
+        
+        [lineMatches enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *weekSpanError) {
+            NSRect fullSemaineRect = [obj getFullSemaineRect];
+            NSString *lineContent = [[firstPage selectionForRect:fullSemaineRect] string];
+            
+            NSTextCheckingResult *match = [weekSpanRegularExpression firstMatchInString:lineContent options:0 range:NSMakeRange(0, [lineContent length])];
+            if (match) {;
+                NSRange endDateRange = [match rangeAtIndex:1];
+                NSString *endDateString = [lineContent substringWithRange:endDateRange];
+                // the PDF generation is mean: é is actually two characters, one ´ over the e, so we'll have to remove those
+                // I'll see in august how û is replaced :-/
+                // Yes, the two é are not the same!!!
+                endDateString = [endDateString stringByReplacingOccurrencesOfString:@"é" withString:@"é" options:0 range:NSMakeRange(0,[endDateString length])];
+                
+                NSDate *endDate = [formatter dateFromString: endDateString];
+                
+                if (endDate) {
+                    NSDateComponents *weekComponentExclusive = [[NSDateComponents alloc] init];
+                    weekComponentExclusive.day = -6;
+                    
+                    NSCalendar *calendar = [NSCalendar currentCalendar];
+                    NSDate *startDate = [calendar dateByAddingComponents:weekComponentExclusive toDate:endDate options:0];
+                    
+                    [obj setFromDate: startDate];
+                    [obj setToDate: endDate];
+                } else {
+                    NSLog(@"Did not match: %@",endDateString);
+                }
+            }
         }];
     }
 }

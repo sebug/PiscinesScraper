@@ -16,4 +16,9 @@
 
 @property NSRect vernetsRect;
 
+@property (copy) NSDate *fromDate;
+@property (copy) NSDate *toDate;
+
+-(NSRect)getFullSemaineRect;
+
 @end
