@@ -12,6 +12,8 @@
 
 @property NSRect semaineRect;
 
+@property NSRect lundiRect;
+
 @property NSRect vernetsRect;
 
 @end
