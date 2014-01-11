@@ -7,12 +7,24 @@
 //
 
 #import "SGCAppDelegate.h"
+#import "SGCAgendaParser.h"
+#import "SGCLineMatch.h"
+#import <Quartz/Quartz.h>
 
 @implementation SGCAppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    // Insert code here to initialize your application
+    NSString *inputFilePath = @"/Users/sgfeller/Documents/Projets/PiscinesScraper/horaires-piscines-patinoires-ville-de-geneve.pdf";
+    NSString *outputFilePath = @"/Users/sgfeller/Documents/Projets/PiscinesScraper/out.txt";
+    PDFDocument *pdfDoc = [[PDFDocument alloc] initWithURL: [NSURL fileURLWithPath: inputFilePath]];
+    
+    
+    SGCAgendaParser* agendaParser = [[SGCAgendaParser alloc] initWithPDFDocument:pdfDoc];
+
+    [agendaParser readContent];
+    
+    [agendaParser saveOutputToFile:outputFilePath];
 }
 
 @end

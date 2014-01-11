@@ -18,6 +18,9 @@
 		EB77FD93186B48630042CF7D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB77FD72186B48630042CF7D /* Cocoa.framework */; };
 		EB77FD9B186B48630042CF7D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = EB77FD99186B48630042CF7D /* InfoPlist.strings */; };
 		EB77FD9D186B48630042CF7D /* PiscinesScraperTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EB77FD9C186B48630042CF7D /* PiscinesScraperTests.m */; };
+		EB77FDA7186B5B5B0042CF7D /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB77FDA6186B5B5B0042CF7D /* Quartz.framework */; };
+		EB77FDAA186B68690042CF7D /* SGCAgendaParser.m in Sources */ = {isa = PBXBuildFile; fileRef = EB77FDA9186B68690042CF7D /* SGCAgendaParser.m */; };
+		EB7C39B71881C7B10099FA80 /* SGCLineMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = EB7C39B61881C7B10099FA80 /* SGCLineMatch.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +53,11 @@
 		EB77FD98186B48630042CF7D /* PiscinesScraperTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PiscinesScraperTests-Info.plist"; sourceTree = "<group>"; };
 		EB77FD9A186B48630042CF7D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		EB77FD9C186B48630042CF7D /* PiscinesScraperTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PiscinesScraperTests.m; sourceTree = "<group>"; };
+		EB77FDA6186B5B5B0042CF7D /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
+		EB77FDA8186B68690042CF7D /* SGCAgendaParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGCAgendaParser.h; sourceTree = "<group>"; };
+		EB77FDA9186B68690042CF7D /* SGCAgendaParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SGCAgendaParser.m; sourceTree = "<group>"; };
+		EB7C39B51881C7B10099FA80 /* SGCLineMatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGCLineMatch.h; sourceTree = "<group>"; };
+		EB7C39B61881C7B10099FA80 /* SGCLineMatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SGCLineMatch.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB77FDA7186B5B5B0042CF7D /* Quartz.framework in Frameworks */,
 				EB77FD73186B48630042CF7D /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -95,6 +104,7 @@
 		EB77FD71186B48630042CF7D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EB77FDA6186B5B5B0042CF7D /* Quartz.framework */,
 				EB77FD72186B48630042CF7D /* Cocoa.framework */,
 				EB77FD91186B48630042CF7D /* XCTest.framework */,
 				EB77FD74186B48630042CF7D /* Other Frameworks */,
@@ -120,6 +130,10 @@
 				EB77FD87186B48630042CF7D /* MainMenu.xib */,
 				EB77FD8A186B48630042CF7D /* Images.xcassets */,
 				EB77FD79186B48630042CF7D /* Supporting Files */,
+				EB77FDA8186B68690042CF7D /* SGCAgendaParser.h */,
+				EB77FDA9186B68690042CF7D /* SGCAgendaParser.m */,
+				EB7C39B51881C7B10099FA80 /* SGCLineMatch.h */,
+				EB7C39B61881C7B10099FA80 /* SGCLineMatch.m */,
 			);
 			path = PiscinesScraper;
 			sourceTree = "<group>";
@@ -254,7 +268,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				EB77FD86186B48630042CF7D /* SGCAppDelegate.m in Sources */,
+				EB77FDAA186B68690042CF7D /* SGCAgendaParser.m in Sources */,
 				EB77FD7F186B48630042CF7D /* main.m in Sources */,
+				EB7C39B71881C7B10099FA80 /* SGCLineMatch.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -465,6 +481,7 @@
 				EB77FDA2186B48630042CF7D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		EB77FDA3186B48630042CF7D /* Build configuration list for PBXNativeTarget "PiscinesScraperTests" */ = {
 			isa = XCConfigurationList;
@@ -473,6 +490,7 @@
 				EB77FDA5186B48630042CF7D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
