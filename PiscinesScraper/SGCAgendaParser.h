@@ -13,6 +13,16 @@
 
 @property (readonly) PDFDocument *document;
 
+@property NSArray *weekdayNames;
+
+// the date format in the document: 11 janvier 2014
+@property NSDateFormatter *documentFormatter;
+
+// The universal date format: 2014-01-11
+@property NSDateFormatter *universalFormatter;
+
+@property NSMutableArray *openingHours;
+
 -(id)initWithPDFDocument: (PDFDocument*)theDocument;
 
 -(void)readContent;

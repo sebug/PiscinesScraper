@@ -21,6 +21,7 @@
 		EB77FDA7186B5B5B0042CF7D /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB77FDA6186B5B5B0042CF7D /* Quartz.framework */; };
 		EB77FDAA186B68690042CF7D /* SGCAgendaParser.m in Sources */ = {isa = PBXBuildFile; fileRef = EB77FDA9186B68690042CF7D /* SGCAgendaParser.m */; };
 		EB7C39B71881C7B10099FA80 /* SGCLineMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = EB7C39B61881C7B10099FA80 /* SGCLineMatch.m */; };
+		EB7C39BA1882091C0099FA80 /* SGCOpeningHourInformation.m in Sources */ = {isa = PBXBuildFile; fileRef = EB7C39B91882091C0099FA80 /* SGCOpeningHourInformation.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +59,8 @@
 		EB77FDA9186B68690042CF7D /* SGCAgendaParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SGCAgendaParser.m; sourceTree = "<group>"; };
 		EB7C39B51881C7B10099FA80 /* SGCLineMatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGCLineMatch.h; sourceTree = "<group>"; };
 		EB7C39B61881C7B10099FA80 /* SGCLineMatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SGCLineMatch.m; sourceTree = "<group>"; };
+		EB7C39B81882091C0099FA80 /* SGCOpeningHourInformation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGCOpeningHourInformation.h; sourceTree = "<group>"; };
+		EB7C39B91882091C0099FA80 /* SGCOpeningHourInformation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SGCOpeningHourInformation.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +137,8 @@
 				EB77FDA9186B68690042CF7D /* SGCAgendaParser.m */,
 				EB7C39B51881C7B10099FA80 /* SGCLineMatch.h */,
 				EB7C39B61881C7B10099FA80 /* SGCLineMatch.m */,
+				EB7C39B81882091C0099FA80 /* SGCOpeningHourInformation.h */,
+				EB7C39B91882091C0099FA80 /* SGCOpeningHourInformation.m */,
 			);
 			path = PiscinesScraper;
 			sourceTree = "<group>";
@@ -270,6 +275,7 @@
 				EB77FD86186B48630042CF7D /* SGCAppDelegate.m in Sources */,
 				EB77FDAA186B68690042CF7D /* SGCAgendaParser.m in Sources */,
 				EB77FD7F186B48630042CF7D /* main.m in Sources */,
+				EB7C39BA1882091C0099FA80 /* SGCOpeningHourInformation.m in Sources */,
 				EB7C39B71881C7B10099FA80 /* SGCLineMatch.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

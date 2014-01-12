@@ -10,15 +10,19 @@
 
 @interface SGCLineMatch : NSObject
 
+// rectangles in the PDF
 @property NSRect semaineRect;
-
-@property NSRect lundiRect;
-
+@property NSRect *weekdayRects;
 @property NSRect vernetsRect;
+@property NSRect varembeRect;
 
 @property (copy) NSDate *fromDate;
 @property (copy) NSDate *toDate;
 
+@property NSMutableDictionary *openingHourInformations;
+
 -(NSRect)getFullSemaineRect;
+
+-(void)setOpeningHoursForWeekDayIndex:(int)idx withText:(NSString*)openingHoursText withLocationName:(NSString*)locationName;
 
 @end

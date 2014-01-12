@@ -8,6 +8,7 @@
 
 #import "SGCAgendaParser.h"
 #import "SGCLineMatch.h"
+#include <math.h>
 
 @implementation SGCAgendaParser
 
@@ -15,6 +16,14 @@
     self = [super init];
     if (self) {
         _document = [theDocument copy];
+        _weekdayNames = [NSArray arrayWithObjects:@"Lundi",@"Mardi",@"Mercredi",@"Jeudi",@"Vendredi",@"Samedi",@"Dimanche", nil];
+        NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"fr_CH"]; // Yes, we're in Geneva
+        _documentFormatter = [[NSDateFormatter alloc] init];
+        [_documentFormatter setDateFormat:@"dd MMMM yyyy"];
+        [_documentFormatter setLocale:locale];
+        _universalFormatter = [[NSDateFormatter alloc] init];
+        [_universalFormatter setDateFormat:@"yyyy-MM-dd"];
+        [_universalFormatter setLocale:locale];
     }
     return self;
 }
@@ -57,56 +66,114 @@
             closest.vernetsRect = rect;
         }];
         
-        // Repeat with the monday text, so that we get outer bounds
-        [self findStringAndAssignToClosest:@"Lundi" withLineMatches:lineMatches andAssignmentBlock:^(SGCLineMatch *closest, NSRect rect) {
-            closest.lundiRect = rect;
+        [self findStringAndAssignToClosest:@"Varemb" withLineMatches:lineMatches andAssignmentBlock:^(SGCLineMatch *closest, NSRect rect) {
+            closest.varembeRect = rect;
         }];
         
-        NSError *weekSpanError = NULL;
-        NSRegularExpression *weekSpanRegularExpression =
-            [NSRegularExpression
-                regularExpressionWithPattern:@"semaine.*au\\s+(\\d+\\s*\\S+\\s*\\d\\d\\d\\d)"
-                options:(NSRegularExpressionDotMatchesLineSeparators | NSRegularExpressionCaseInsensitive)
-                error:&weekSpanError];
-        
-        NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"fr_CH"]; // Yes, we're in Geneva
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateFormat:@"dd MMMM yyyy"];
-        [formatter setLocale:locale];
-        
-        NSDateFormatter *unifiedFormatter = [[NSDateFormatter alloc] init];
-        [unifiedFormatter setDateFormat:@"yyyy-MM-dd"];
-        [unifiedFormatter setLocale:locale];
+        // Repeat with the weekday texts for outer bounds
+        [self.weekdayNames enumerateObjectsUsingBlock:^(id weekday, NSUInteger idx, BOOL *stop) {
+            [self findStringAndAssignToClosest:weekday withLineMatches:lineMatches andAssignmentBlock:^(SGCLineMatch *closest, NSRect rect) {
+                closest.weekdayRects[idx] = rect;
+            }];
+        }];
         
         [lineMatches enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *weekSpanError) {
             NSRect fullSemaineRect = [obj getFullSemaineRect];
             NSString *lineContent = [[firstPage selectionForRect:fullSemaineRect] string];
             
-            NSTextCheckingResult *match = [weekSpanRegularExpression firstMatchInString:lineContent options:0 range:NSMakeRange(0, [lineContent length])];
-            if (match) {;
-                NSRange endDateRange = [match rangeAtIndex:1];
-                NSString *endDateString = [lineContent substringWithRange:endDateRange];
-                // the PDF generation is mean: é is actually two characters, one ´ over the e, so we'll have to remove those
-                // I'll see in august how û is replaced :-/
-                // Yes, the two é are not the same!!!
-                endDateString = [endDateString stringByReplacingOccurrencesOfString:@"é" withString:@"é" options:0 range:NSMakeRange(0,[endDateString length])];
+            NSDate *endDate = [self extractWeekSpanEndDateFromLineContent:lineContent];
+            if (endDate) {
+                NSDateComponents *weekComponentExclusive = [[NSDateComponents alloc] init];
+                weekComponentExclusive.day = -6;
                 
-                NSDate *endDate = [formatter dateFromString: endDateString];
+                NSCalendar *calendar = [NSCalendar currentCalendar];
+                NSDate *startDate = [calendar dateByAddingComponents:weekComponentExclusive toDate:endDate options:0];
                 
-                if (endDate) {
-                    NSDateComponents *weekComponentExclusive = [[NSDateComponents alloc] init];
-                    weekComponentExclusive.day = -6;
+                [obj setFromDate: startDate];
+                [obj setToDate: endDate];
+            }
+        }];
+        
+        // Finally, match the opening hours for Vernets
+        [lineMatches enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            SGCLineMatch *lineMatch = obj;
+            for (int i = 0; i < 7; i += 1) {
+                NSRect weekdayRect = lineMatch.weekdayRects[i];
+                
+                int slacksToTry[5];
+                slacksToTry[0] = 0;
+                slacksToTry[1] = 5;
+                slacksToTry[2] = 10;
+                slacksToTry[3] = 20;
+                slacksToTry[4] = 30;
+                for (int j = 0; j < 5; j += 1) {
+                    int slack = slacksToTry[j];
+                    NSRect valueRect = NSMakeRect(floorf(weekdayRect.origin.x - slack), floorf(lineMatch.vernetsRect.origin.y - slack), ceilf(weekdayRect.size.width + slack), ceilf(lineMatch.vernetsRect.size.height + slack));
                     
-                    NSCalendar *calendar = [NSCalendar currentCalendar];
-                    NSDate *startDate = [calendar dateByAddingComponents:weekComponentExclusive toDate:endDate options:0];
-                    
-                    [obj setFromDate: startDate];
-                    [obj setToDate: endDate];
-                } else {
-                    NSLog(@"Did not match: %@",endDateString);
+                    NSString *valueContent = [[firstPage selectionForRect:valueRect] string];
+                    if (valueContent != NULL && [valueContent length] > 0) {
+                        [lineMatch setOpeningHoursForWeekDayIndex:i withText:valueContent withLocationName:@"Vernets"];
+                        break;
+                    }
                 }
             }
         }];
+        
+        // And Varembé
+        [lineMatches enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            SGCLineMatch *lineMatch = obj;
+            for (int i = 0; i < 7; i += 1) {
+                NSRect weekdayRect = lineMatch.weekdayRects[i];
+                
+                int slacksToTry[5];
+                slacksToTry[0] = 0;
+                slacksToTry[1] = 5;
+                slacksToTry[2] = 10;
+                slacksToTry[3] = 20;
+                slacksToTry[4] = 30;
+                for (int j = 0; j < 5; j += 1) {
+                    int slack = slacksToTry[j];
+                    NSRect valueRect = NSMakeRect(floorf(weekdayRect.origin.x - slack), floorf(lineMatch.vernetsRect.origin.y - slack), ceilf(weekdayRect.size.width + slack), ceilf(lineMatch.vernetsRect.size.height + slack));
+                    
+                    NSString *valueContent = [[firstPage selectionForRect:valueRect] string];
+                    if (valueContent != NULL && [valueContent length] > 0) {
+                        [lineMatch setOpeningHoursForWeekDayIndex:i withText:valueContent withLocationName:@"Varembé"];
+                        break;
+                    }
+                }
+            }
+        }];
+        
+        // Ok, now store the parsed results in a flattened array
+        self.openingHours = [[NSMutableArray alloc] init];
+        [lineMatches enumerateObjectsUsingBlock:^(id lmOuter, NSUInteger idx, BOOL *stop) {
+            SGCLineMatch *lineMatch = lmOuter;
+            [lineMatch.openingHourInformations enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+                [self.openingHours addObject:obj];
+            }];
+        }];
+    }
+}
+
+-(NSDate*)extractWeekSpanEndDateFromLineContent:(NSString*)lineContent {
+    NSError *weekSpanError = NULL;
+    NSRegularExpression *weekSpanRegularExpression =
+    [NSRegularExpression
+     regularExpressionWithPattern:@"semaine.*au\\s+(\\d+\\s*\\S+\\s*\\d\\d\\d\\d)"
+     options:(NSRegularExpressionDotMatchesLineSeparators | NSRegularExpressionCaseInsensitive)
+     error:&weekSpanError];
+    NSTextCheckingResult *match = [weekSpanRegularExpression firstMatchInString:lineContent options:0 range:NSMakeRange(0, [lineContent length])];
+    if (match) {
+        NSRange endDateRange = [match rangeAtIndex:1];
+        NSString *endDateString = [lineContent substringWithRange:endDateRange];
+        // the PDF generation is mean: é is actually two characters, one ´ over the e, so we'll have to remove those
+        // I'll see in august how û is replaced :-/
+        // Yes, the two é are not the same!!!
+        endDateString = [endDateString stringByReplacingOccurrencesOfString:@"é" withString:@"é" options:0 range:NSMakeRange(0,[endDateString length])];
+        
+        return [self.documentFormatter dateFromString: endDateString];
+    } else {
+        return NULL;
     }
 }
 
@@ -120,7 +187,7 @@
         // line matches will always have at least one item because of the outer check
         SGCLineMatch *closest = [sortedByDistance objectAtIndex:0];
         
-        // now set the vernets object
+        // now set the object
         assignmentBlock(closest,boundsOnFirstPage);
     }];
 }
@@ -148,6 +215,15 @@
 }
 
 -(void)saveOutputToFile:(NSString *)fileName {
+    if (self.openingHours == NULL) {
+        NSException *e = [NSException
+                          exceptionWithName:@"OpeningHoursNotReadYetException" reason:@"You have not yet read the opening hours." userInfo:nil];
+        @throw e;
+    }
+    
+    SEL dateSelector = @selector(date:);
+    [self.openingHours sortUsingSelector:dateSelector];
+    
     //[self.content writeToFile:fileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 }
 
