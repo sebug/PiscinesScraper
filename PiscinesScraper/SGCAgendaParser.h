@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <Quartz/Quartz.h>
 
-@interface SGCAgendaParser : NSObject
+@interface SGCAgendaParser : NSObject <NSStreamDelegate>
 
 @property (readonly) PDFDocument *document;
 

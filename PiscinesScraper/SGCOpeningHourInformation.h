@@ -16,4 +16,6 @@
 
 -(void)setOpeningHour:(NSString*)openingHourText forLocation:(NSString*)location;
 
+-(NSString*)getSimpleTextRepresentationWithDateFormatter:(NSDateFormatter*)dateFormatter;
+
 @end

@@ -8,6 +8,7 @@
 
 #import "SGCAgendaParser.h"
 #import "SGCLineMatch.h"
+#import "SGCOpeningHourInformation.h"
 #include <math.h>
 
 @implementation SGCAgendaParser
@@ -66,7 +67,7 @@
             closest.vernetsRect = rect;
         }];
         
-        [self findStringAndAssignToClosest:@"Varemb" withLineMatches:lineMatches andAssignmentBlock:^(SGCLineMatch *closest, NSRect rect) {
+        [self findStringAndAssignToClosest:@"Piscine de Varemb" withLineMatches:lineMatches andAssignmentBlock:^(SGCLineMatch *closest, NSRect rect) {
             closest.varembeRect = rect;
         }];
         
@@ -95,20 +96,23 @@
         }];
         
         // Finally, match the opening hours for Vernets
+        int downwardSlack = 5;
+        int rightAdditionalSlack = 15;
+        int *slacksToTry = malloc(sizeof(int) * 5);
+        slacksToTry[0] = 0;
+        slacksToTry[1] = 5;
+        slacksToTry[2] = 10;
+        slacksToTry[3] = 20;
+        slacksToTry[4] = 30;
+        
         [lineMatches enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             SGCLineMatch *lineMatch = obj;
             for (int i = 0; i < 7; i += 1) {
                 NSRect weekdayRect = lineMatch.weekdayRects[i];
-                
-                int slacksToTry[5];
-                slacksToTry[0] = 0;
-                slacksToTry[1] = 5;
-                slacksToTry[2] = 10;
-                slacksToTry[3] = 20;
-                slacksToTry[4] = 30;
+
                 for (int j = 0; j < 5; j += 1) {
                     int slack = slacksToTry[j];
-                    NSRect valueRect = NSMakeRect(floorf(weekdayRect.origin.x - slack), floorf(lineMatch.vernetsRect.origin.y - slack), ceilf(weekdayRect.size.width + slack), ceilf(lineMatch.vernetsRect.size.height + slack));
+                    NSRect valueRect = NSMakeRect(floorf(weekdayRect.origin.x - slack), floorf(lineMatch.vernetsRect.origin.y - downwardSlack), ceilf(weekdayRect.size.width + slack + rightAdditionalSlack), ceilf(lineMatch.vernetsRect.size.height + slack));
                     
                     NSString *valueContent = [[firstPage selectionForRect:valueRect] string];
                     if (valueContent != NULL && [valueContent length] > 0) {
@@ -125,15 +129,9 @@
             for (int i = 0; i < 7; i += 1) {
                 NSRect weekdayRect = lineMatch.weekdayRects[i];
                 
-                int slacksToTry[5];
-                slacksToTry[0] = 0;
-                slacksToTry[1] = 5;
-                slacksToTry[2] = 10;
-                slacksToTry[3] = 20;
-                slacksToTry[4] = 30;
                 for (int j = 0; j < 5; j += 1) {
                     int slack = slacksToTry[j];
-                    NSRect valueRect = NSMakeRect(floorf(weekdayRect.origin.x - slack), floorf(lineMatch.vernetsRect.origin.y - slack), ceilf(weekdayRect.size.width + slack), ceilf(lineMatch.vernetsRect.size.height + slack));
+                    NSRect valueRect = NSMakeRect(floorf(weekdayRect.origin.x - slack), floorf(lineMatch.varembeRect.origin.y - downwardSlack), ceilf(weekdayRect.size.width + slack + rightAdditionalSlack), ceilf(lineMatch.varembeRect.size.height + slack));
                     
                     NSString *valueContent = [[firstPage selectionForRect:valueRect] string];
                     if (valueContent != NULL && [valueContent length] > 0) {
@@ -143,6 +141,9 @@
                 }
             }
         }];
+        
+        free(slacksToTry);
+        slacksToTry = NULL;
         
         // Ok, now store the parsed results in a flattened array
         self.openingHours = [[NSMutableArray alloc] init];
@@ -221,10 +222,28 @@
         @throw e;
     }
     
-    SEL dateSelector = @selector(date:);
-    [self.openingHours sortUsingSelector:dateSelector];
+    [self.openingHours sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        SGCOpeningHourInformation *oh1 = obj1;
+        SGCOpeningHourInformation *oh2 = obj2;
+        
+        return [oh1.date compare: oh2.date];
+    }];
     
-    //[self.content writeToFile:fileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    NSMutableArray *lines = [[NSMutableArray alloc] init];
+    
+    [self.openingHours enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSString *item = [obj getSimpleTextRepresentationWithDateFormatter: self.universalFormatter];
+        if (item) {
+            [lines addObject:item];
+        }
+    }];
+    
+    NSString *fileContent = [lines componentsJoinedByString:@"\n"];
+    NSError *writeError;
+    [fileContent writeToFile:fileName atomically:NO encoding:NSUTF8StringEncoding error:&writeError];
+    if (writeError) {
+        NSLog(@"%@", [writeError description]);
+    }
 }
 
 @end

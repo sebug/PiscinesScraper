@@ -21,4 +21,25 @@
 -(void)setOpeningHour:(NSString *)openingHourText forLocation:(NSString *)location {
     [self.locationsToOpeningHours setValue:openingHourText forKey:location];
 }
+
+-(NSString*)getSimpleTextRepresentationWithDateFormatter:(NSDateFormatter *)dateFormatter {
+    NSMutableString *result = [[NSMutableString alloc] init];
+    if (self.date && dateFormatter) {
+        [result appendString:[dateFormatter stringFromDate:self.date]];
+    } else {
+        [result appendString:@"Unknown date"];
+    }
+    [result appendString:@"\n"];
+    
+    if (self.locationsToOpeningHours) {
+        [self.locationsToOpeningHours enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+            [result appendString:key];
+            [result appendString:@": "];
+            [result appendString: obj];
+            [result appendString:@"\n"];
+        }];
+    }
+    
+    return [NSString stringWithString:result]; // freeze
+}
 @end
