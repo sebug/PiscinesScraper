@@ -15,16 +15,15 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    NSString *inputFilePath = @"/Users/sgfeller/Documents/Projets/PiscinesScraper/horaires-piscines-patinoires-ville-de-geneve.pdf";
-    NSString *outputFilePath = @"/Users/sgfeller/Documents/Projets/PiscinesScraper/out.txt";
-    PDFDocument *pdfDoc = [[PDFDocument alloc] initWithURL: [NSURL fileURLWithPath: inputFilePath]];
+    NSString *inputURL = @"http://www.ville-geneve.ch/fileadmin/public/Departement_3/sport/horaires-piscines-patinoires-ville-de-geneve.pdf";
     
+    PDFDocument *pdfDoc = [[PDFDocument alloc] initWithURL: [NSURL URLWithString:inputURL]];
     
     SGCAgendaParser* agendaParser = [[SGCAgendaParser alloc] initWithPDFDocument:pdfDoc];
-
-    [agendaParser readContent];
     
-    [agendaParser saveOutputToFile:outputFilePath];
+    SGCOpeningHourInformation *info = [agendaParser openingHoursToday];
+    
+    NSLog(@"%@", [info getSimpleTextRepresentationWithDateFormatter:agendaParser.universalFormatter]);
 }
 
 @end

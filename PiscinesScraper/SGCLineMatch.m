@@ -42,6 +42,9 @@
 }
 
 -(void)setOpeningHoursForWeekDayIndex:(int)idx withText:(NSString *)openingHoursText withLocationName:(NSString *)locationName {
+    // Strip faulty characters
+    NSString *cleanedOpeningHours = [openingHoursText stringByReplacingOccurrencesOfString:@"\r" withString:@""];
+    
     // First, find the date
     NSDateComponents *dayComponents = [[NSDateComponents alloc] init];
     dayComponents.day = idx;
@@ -56,6 +59,6 @@
         info.date = dateToSet;
         [self.openingHourInformations setObject:info forKeyedSubscript:[NSNumber numberWithInt:idx]];
     }
-    [info setOpeningHour:openingHoursText forLocation:locationName];
+    [info setOpeningHour:cleanedOpeningHours forLocation:locationName];
 }
 @end

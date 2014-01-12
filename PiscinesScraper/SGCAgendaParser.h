@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import <Quartz/Quartz.h>
+#import "SGCOpeningHourInformation.h"
 
-@interface SGCAgendaParser : NSObject <NSStreamDelegate>
+@interface SGCAgendaParser : NSObject
 
 @property (readonly) PDFDocument *document;
 
@@ -29,4 +30,5 @@
 
 -(void)saveOutputToFile: (NSString*)fileName;
 
+-(SGCOpeningHourInformation*)openingHoursToday;
 @end

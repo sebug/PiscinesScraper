@@ -156,6 +156,29 @@
     }
 }
 
+-(SGCOpeningHourInformation*)openingHoursToday {
+    if (!self.openingHours || [self.openingHours count] == 0) {
+        [self readContent];
+    }
+    
+    NSDate *today = [NSDate date];
+    unsigned unitFlags = NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit;
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:unitFlags fromDate:today];
+    today = [[NSCalendar currentCalendar] dateFromComponents:components];
+    
+    __block SGCOpeningHourInformation *informationForToday;
+    
+    [self.openingHours enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        SGCOpeningHourInformation *info = obj;
+        if ([info.date isEqualToDate:today]) {
+            informationForToday = info;
+            *stop = true;
+        }
+    }];
+    
+    return informationForToday;
+}
+
 -(NSDate*)extractWeekSpanEndDateFromLineContent:(NSString*)lineContent {
     NSError *weekSpanError = NULL;
     NSRegularExpression *weekSpanRegularExpression =
